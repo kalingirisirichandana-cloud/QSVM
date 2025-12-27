@@ -75,6 +75,96 @@ Once running, open your web browser and navigate to:
 http://127.0.0.1:5000
 ```
 
+## Deployment on Render
+
+This application is ready to deploy on [Render](https://render.com), a cloud platform for hosting web applications.
+
+### Prerequisites for Render Deployment
+
+1. **GitHub Repository**: Your code should be pushed to a GitHub repository (already done!)
+2. **Render Account**: Sign up for a free account at [render.com](https://render.com)
+
+### Deployment Steps
+
+#### Option 1: Using Render Dashboard (Recommended)
+
+1. **Log in to Render Dashboard**
+   - Go to [dashboard.render.com](https://dashboard.render.com)
+   - Sign in or create a free account
+
+2. **Create New Web Service**
+   - Click "New +" button
+   - Select "Web Service"
+   - Connect your GitHub account if not already connected
+   - Select your repository: `kalingirisirichandana-cloud/QSVM`
+
+3. **Configure the Service**
+   - **Name**: `qsvm-fraud-detection` (or any name you prefer)
+   - **Region**: Choose closest to your users
+   - **Branch**: `main` (or your default branch)
+   - **Root Directory**: Leave empty (root directory)
+   - **Runtime**: `Python 3`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `python app.py`
+
+4. **Environment Variables** (Optional)
+   - `FLASK_DEBUG`: `False` (for production)
+   - `PYTHON_VERSION`: `3.11.6` (optional, specified in runtime.txt)
+
+5. **Plan Selection**
+   - **Free Tier**: Suitable for testing and demos
+   - **Starter/Standard**: Better performance for production use
+
+6. **Deploy**
+   - Click "Create Web Service"
+   - Render will automatically build and deploy your application
+   - First deployment may take 10-15 minutes (model training)
+   - You'll get a URL like: `https://qsvm-fraud-detection.onrender.com`
+
+#### Option 2: Using Render Blueprint (render.yaml)
+
+If you prefer infrastructure-as-code:
+
+1. The project includes a `render.yaml` file
+2. In Render Dashboard, click "New +" → "Blueprint"
+3. Connect your repository
+4. Render will automatically detect and use `render.yaml`
+5. Review and deploy
+
+### Important Notes for Render Deployment
+
+⚠️ **Dataset File (creditcard.csv)**:
+- The dataset file (144MB) is **NOT included** in the repository (too large for Git)
+- **Option A**: Upload via Render Shell/Console after deployment
+  - Use Render's web console or SSH to upload the file
+- **Option B**: Use Render Disk Storage
+  - Enable persistent disk storage in your service settings
+  - Upload the file after first deployment
+- **Option C**: Download during build (advanced)
+  - Add build command to download from a cloud storage service
+
+📝 **Model Training**:
+- On first deployment, the model will train (takes 5-10 minutes)
+- Subsequent deployments will reuse the trained model (faster)
+- Model files (`.pkl`) are saved to disk and persist across restarts
+
+⚡ **Performance**:
+- Free tier services spin down after 15 minutes of inactivity
+- First request after spin-down may take 30-60 seconds (cold start)
+- Consider upgrading to a paid plan for always-on service
+
+### Verify Deployment
+
+1. Visit your Render URL (e.g., `https://your-app.onrender.com`)
+2. The homepage should load with the fraud detection form
+3. Test with sample V1 and V2 values (e.g., V1=-1.36, V2=-0.073)
+
+### Monitoring
+
+- **Logs**: View real-time logs in Render Dashboard
+- **Metrics**: Monitor CPU, memory, and request metrics
+- **Events**: Track deployment events and errors
+
 ## Usage
 
 ### Single Transaction Prediction

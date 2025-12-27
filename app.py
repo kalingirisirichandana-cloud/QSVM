@@ -197,12 +197,17 @@ if __name__ == '__main__':
     if init_model():
         print("=" * 50)
         print("Starting Flask application...")
-        print("Visit http://127.0.0.1:5000 to use the application")
+        
+        # Get port from environment variable (Render provides this) or use default 5000
+        port = int(os.environ.get('PORT', 5000))
+        debug = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+        
+        print(f"Visit http://127.0.0.1:{port} to use the application")
         print("=" * 50)
         
         # Run the Flask application
-        # Set debug=False for production, True for development
-        app.run(debug=True, host='0.0.0.0', port=5000)
+        # Set debug=False for production (Render), True for local development
+        app.run(debug=debug, host='0.0.0.0', port=port)
     else:
         print("Failed to initialize model. Please check the error messages above.")
         print("Make sure creditcard.csv is in the project directory.")

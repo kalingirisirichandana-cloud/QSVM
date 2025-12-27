@@ -1,0 +1,24 @@
+# Render Blueprint configuration for QSVM Fraud Detection Web App
+# For more info, see: https://render.com/docs/blueprint-spec
+#
+# IMPORTANT: The creditcard.csv dataset (144MB) is NOT included in the repository.
+# You must upload it separately after deployment using Render Shell or SSH.
+# See DEPLOYMENT.md for detailed instructions.
+
+services:
+  - type: web
+    name: qsvm-fraud-detection
+    env: python
+    plan: starter  # Options: free, starter ($7/mo), standard ($25/mo), pro
+    region: oregon  # Options: oregon, frankfurt, singapore, mumbai
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.6
+      - key: FLASK_DEBUG
+        value: False
+    # Auto-deploy is enabled by default - service redeploys on git push
+    # Health check path: / (homepage)
+    # Note: First deployment will train the model (takes 5-10 minutes)
+
