@@ -31,15 +31,44 @@ feature_map = None
 X_train = None
 
 
+def download_dataset():
+    """Automatically download the dataset if it's missing."""
+    csv_path = "creditcard.csv"
+    if os.path.exists(csv_path):
+        return True
+    
+    # Try to download from environment variable (you can set DATASET_URL in Render)
+    dataset_url = os.environ.get('DATASET_URL', '')
+    
+    if dataset_url:
+        try:
+            print(f"Downloading dataset from {dataset_url}...")
+            import urllib.request
+            urllib.request.urlretrieve(dataset_url, csv_path)
+            if os.path.exists(csv_path) and os.path.getsize(csv_path) > 1000000:  # Check if file is > 1MB
+                print(f"Successfully downloaded {csv_path}")
+                return True
+        except Exception as e:
+            print(f"Failed to download dataset: {e}")
+    
+    return False
+
+
 def init_model():
     """Initialize the QSVM model at application startup."""
     global model, quantum_kernel, feature_map, X_train
     
     csv_path = "creditcard.csv"
+    
+    # Try to download dataset if missing
     if not os.path.exists(csv_path):
-        print(f"Warning: {csv_path} not found. Please ensure the dataset is in the project directory.")
-        print("The application will start but predictions will not work until the dataset is uploaded.")
-        return False
+        print(f"Warning: {csv_path} not found. Attempting to download...")
+        if not download_dataset():
+            print(f"Could not download {csv_path} automatically.")
+            print("Please set DATASET_URL environment variable in Render Dashboard")
+            print("OR upload the file manually using Render Shell (see QUICK_FIX.md)")
+            print("The application will start but predictions will not work until the dataset is available.")
+            return False
     
     try:
         model, quantum_kernel, feature_map, X_train = get_or_train_model(csv_path, retrain=False)
