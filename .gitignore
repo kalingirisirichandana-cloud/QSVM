@@ -62,3 +62,9 @@ instance/
 # Dataset (if too large, uncomment to exclude)
 # creditcard.csv
 
+
+creditcard.csv
+.~lock.*
+__pycache__/
+*.pyc
+venv/
