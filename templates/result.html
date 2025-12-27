@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction Results - QSVM Fraud Detection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .back-btn {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-bottom: 30px;
+            transition: background 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #5568d3;
+        }
+
+        /* Single Result Styling */
+        .single-result {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .prediction-badge {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 1.2em;
+            font-weight: 600;
+            margin: 15px 0;
+        }
+
+        .prediction-fraud {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .prediction-not-fraud {
+            background: #51cf66;
+            color: white;
+        }
+
+        .feature-value {
+            font-size: 1.1em;
+            color: #555;
+            margin: 10px 0;
+        }
+
+        .feature-value strong {
+            color: #333;
+        }
+
+        /* Batch Results Styling */
+        .batch-summary {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .batch-summary h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            font-weight: 600;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        tbody tr:hover {
+            background: #e9ecef;
+        }
+
+        .prediction-cell {
+            font-weight: 600;
+        }
+
+        .prediction-cell.fraud {
+            color: #ff6b6b;
+        }
+
+        .prediction-cell.not-fraud {
+            color: #51cf66;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Prediction Results</h1>
+        <a href="/" class="back-btn">← Back to Home</a>
+
+        {% if result %}
+            <!-- Single Transaction Result -->
+            <div class="single-result">
+                <div class="result-card">
+                    <h2 style="margin-bottom: 20px; color: #333;">Transaction Prediction</h2>
+                    
+                    <div class="feature-value">
+                        <strong>V1:</strong> {{ result.v1 }}
+                    </div>
+                    <div class="feature-value">
+                        <strong>V2:</strong> {{ result.v2 }}
+                    </div>
+
+                    <div>
+                        <strong>Prediction:</strong>
+                        <div class="prediction-badge {% if result.prediction_code == 1 %}prediction-fraud{% else %}prediction-not-fraud{% endif %}">
+                            {{ result.prediction }}
+                        </div>
+                    </div>
+
+                    {% if result.confidence %}
+                        <div class="feature-value">
+                            <strong>Confidence:</strong> {{ "%.2f"|format(result.confidence * 100) }}%
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        {% elif batch_results %}
+            <!-- Batch Results -->
+            <div class="batch-summary">
+                <h2>Batch Prediction Summary</h2>
+                <div class="summary-stats">
+                    <div class="stat-card">
+                        <div class="stat-value">{{ batch_results|length }}</div>
+                        <div class="stat-label">Total Transactions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: #ff6b6b;">
+                            {{ batch_results|selectattr('prediction_code', 'equalto', 1)|list|length }}
+                        </div>
+                        <div class="stat-label">Fraud Detected</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: #51cf66;">
+                            {{ batch_results|selectattr('prediction_code', 'equalto', 0)|list|length }}
+                        </div>
+                        <div class="stat-label">Not Fraud</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>V1</th>
+                            <th>V2</th>
+                            <th>Prediction</th>
+                            {% if batch_results[0].time is defined and batch_results[0].time != '' %}
+                                <th>Time</th>
+                            {% endif %}
+                            {% if batch_results[0].amount is defined and batch_results[0].amount != '' %}
+                                <th>Amount</th>
+                            {% endif %}
+                            {% if batch_results[0].class is defined and batch_results[0].class != '' %}
+                                <th>Actual Class</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for res in batch_results %}
+                            <tr>
+                                <td>{{ res.index }}</td>
+                                <td>{{ "%.4f"|format(res.v1) }}</td>
+                                <td>{{ "%.4f"|format(res.v2) }}</td>
+                                <td class="prediction-cell {% if res.prediction_code == 1 %}fraud{% else %}not-fraud{% endif %}">
+                                    {{ res.prediction }}
+                                </td>
+                                {% if res.time is defined and res.time != '' %}
+                                    <td>{{ res.time }}</td>
+                                {% endif %}
+                                {% if res.amount is defined and res.amount != '' %}
+                                    <td>{{ "%.2f"|format(res.amount) }}</td>
+                                {% endif %}
+                                {% if res.class is defined and res.class != '' %}
+                                    <td>{{ 'Fraud' if res.class == 1 else 'Not Fraud' }}</td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
+
