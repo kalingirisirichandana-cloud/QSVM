@@ -193,6 +193,15 @@
             {% endif %}
         {% endwith %}
 
+        <!-- Model status warning -->
+        {% if model_ready is defined and not model_ready %}
+            <div class="alert alert-error">
+                <strong>⚠️ Model Not Ready:</strong> The QSVM model has not been initialized. 
+                Please ensure the <code>creditcard.csv</code> dataset file is uploaded to the server.
+                Predictions will not work until the model is initialized.
+            </div>
+        {% endif %}
+
         <!-- Single Transaction Form -->
         <div class="form-section">
             <h2>Single Transaction Prediction</h2>

@@ -38,6 +38,7 @@ def init_model():
     csv_path = "creditcard.csv"
     if not os.path.exists(csv_path):
         print(f"Warning: {csv_path} not found. Please ensure the dataset is in the project directory.")
+        print("The application will start but predictions will not work until the dataset is uploaded.")
         return False
     
     try:
@@ -48,13 +49,15 @@ def init_model():
         print(f"Error initializing model: {e}")
         import traceback
         traceback.print_exc()
+        print("The application will start but predictions will not work until the issue is resolved.")
         return False
 
 
 @app.route('/')
 def index():
     """Homepage route - displays the main form."""
-    return render_template('index.html')
+    model_status = model is not None and quantum_kernel is not None and X_train is not None
+    return render_template('index.html', model_ready=model_status)
 
 
 @app.route('/predict', methods=['POST'])
@@ -193,22 +196,23 @@ if __name__ == '__main__':
     print("Initializing QSVM Fraud Detection Application...")
     print("=" * 50)
     
-    # Initialize the model at startup
-    if init_model():
-        print("=" * 50)
-        print("Starting Flask application...")
-        
-        # Get port from environment variable (Render provides this) or use default 5000
-        port = int(os.environ.get('PORT', 5000))
-        debug = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
-        
-        print(f"Visit http://127.0.0.1:{port} to use the application")
-        print("=" * 50)
-        
-        # Run the Flask application
-        # Set debug=False for production (Render), True for local development
-        app.run(debug=debug, host='0.0.0.0', port=port)
-    else:
-        print("Failed to initialize model. Please check the error messages above.")
-        print("Make sure creditcard.csv is in the project directory.")
+    # Initialize the model at startup (non-blocking - app will start even if model fails)
+    # This allows the app to start on Render even if creditcard.csv is not yet uploaded
+    init_model()
+    
+    print("=" * 50)
+    print("Starting Flask application...")
+    
+    # Get port from environment variable (Render provides this) or use default 5000
+    port = int(os.environ.get('PORT', 5000))
+    debug = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    
+    print(f"Visit http://127.0.0.1:{port} to use the application")
+    if model is None:
+        print("WARNING: Model not initialized. Please upload creditcard.csv file.")
+    print("=" * 50)
+    
+    # Run the Flask application
+    # Set debug=False for production (Render), True for local development
+    app.run(debug=debug, host='0.0.0.0', port=port)
 
