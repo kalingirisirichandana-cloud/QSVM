@@ -14,6 +14,17 @@ The application will:
 2. Accept single transaction predictions via form
 3. Accept batch predictions via CSV upload
 """
+import os
+import urllib.request
+
+DATASET_URL = "PUT_YOUR_DOWNLOAD_LINK_HERE"
+DATASET_PATH = "creditcard.csv"
+
+if not os.path.exists(DATASET_PATH):
+    print("Downloading dataset...")
+    urllib.request.urlretrieve(DATASET_URL, DATASET_PATH)
+    print("Download complete")
+
 
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
